@@ -21,3 +21,10 @@ class RegisterSerializer(serializers.ModelSerializer):
             )
 
         return user
+    
+
+class CustomerProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomerProfile
+        fields = ['full_name', 'created_at']
+        read_only_fields = ['created_at']
