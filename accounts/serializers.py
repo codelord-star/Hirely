@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, CustomerProfile
+from .models import ProviderProfile, User, CustomerProfile
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -27,4 +27,11 @@ class CustomerProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerProfile
         fields = ['full_name', 'created_at']
+        read_only_fields = ['created_at']
+
+
+class ProviderProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProviderProfile
+        fields = ['business_name', 'business_description', 'county', 'town', 'specific_address', 'profile_image', 'created_at']
         read_only_fields = ['created_at']
