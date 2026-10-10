@@ -5,7 +5,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 
-from .serializers import RegisterSerializer, CustomerProfileSerializer
+from accounts.models import ProviderProfile
+
+from .serializers import RegisterSerializer, CustomerProfileSerializer, ProviderProfileSerializer
 
 # Create your views here.
 @api_view(['POST'])
@@ -38,6 +40,49 @@ def my_customer_profile(request):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class ProviderProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            profile = request.user.provider_profile
+        except ProviderProfile.DoesNotExist:
+            return Response(
+                {"error": "Provider profile not found."},
+                status=404
+            )
+
+        serializer = ProviderProfileSerializer(profile)
+        return Response(serializer.data)
+
+    
+    def patch(self, request):
+        try:
+            profile = request.user.provider_profile
+        except ProviderProfile.DoesNotExist:
+            return Response(
+                {"error": "Provider profile not found."},
+                status=404
+            )
+
+        serializer = ProviderProfileSerializer(
+            profile,
+            data=request.data,
+            partial=True
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+        return Response(
+            serializer.errors,
+            status=400
+        )
+
 
 
 class ProtectedView(APIView):
