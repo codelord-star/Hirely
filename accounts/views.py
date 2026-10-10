@@ -1,4 +1,6 @@
 from django.shortcuts import render
+from django.db import transaction
+
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
@@ -81,6 +83,42 @@ class ProviderProfileView(APIView):
         return Response(
             serializer.errors,
             status=400
+        )
+
+
+class BecomeProviderView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        user = request.user
+
+        if user.is_provider or ProviderProfile.objects.filter(user=user).exists():
+            return Response(
+                {"error": "You are already a provider or have a provider profile."},
+                status=400
+            )
+        
+        serializer = ProviderProfileSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(
+                serializer.errors,
+                status=400
+            )
+
+        
+        with transaction.atomic():
+            profile = serializer.save(user=user)
+
+            user.is_provider = True
+            user.save()
+
+        return Response(
+            {
+                "message": "You are now a provider.",
+                "profile": ProviderProfileSerializer(profile).data
+            },
+            status=201
         )
 
 
