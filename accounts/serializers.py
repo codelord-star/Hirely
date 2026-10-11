@@ -26,7 +26,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 class CustomerProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerProfile
-        fields = ['full_name', 'created_at']
+        fields = ['full_name', 'county', 'town', 'profile_image', 'created_at']
         read_only_fields = ['created_at']
 
 

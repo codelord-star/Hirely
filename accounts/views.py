@@ -30,7 +30,7 @@ def register(request):
 @api_view(['GET', 'PATCH'])
 @permission_classes([IsAuthenticated])
 def my_customer_profile(request):
-    profile = request.user.customerprofile
+    profile = request.user.customer_profile
 
     if request.method == 'GET':
         serializer = CustomerProfileSerializer(profile)
