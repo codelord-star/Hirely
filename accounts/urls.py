@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import BecomeProviderView, ProviderProfileView, my_customer_profile, register, ProtectedView
+from .views import BecomeProviderView, ProviderProfileView, my_account_details, my_customer_profile, register, ProtectedView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
@@ -7,6 +7,7 @@ urlpatterns = [
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('me/customer-profile/', my_customer_profile, name='my_customer_profile'),
+    path('me/account-details/', my_account_details, name='my_account_details'),
     path('provider/profile/', ProviderProfileView.as_view(), name='provider-profile'),
     path('become-provider/', BecomeProviderView.as_view(), name='become-provider'),
     path('test-protected/', ProtectedView.as_view(), name='test_protected'),

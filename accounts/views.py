@@ -9,7 +9,7 @@ from rest_framework import status
 
 from accounts.models import ProviderProfile
 
-from .serializers import RegisterSerializer, CustomerProfileSerializer, ProviderProfileSerializer
+from .serializers import RegisterSerializer, AccountDetailsSerializer, CustomerProfileSerializer, ProviderProfileSerializer
 
 # Create your views here.
 @api_view(['POST'])
@@ -43,6 +43,31 @@ def my_customer_profile(request):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+@api_view(['GET', 'PATCH'])
+@permission_classes([IsAuthenticated])
+def my_account_details(request):
+    user = request.user
+
+    if request.method == 'GET':
+        serializer = AccountDetailsSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    if request.method == 'PATCH':
+        serializer = AccountDetailsSerializer(
+            user,
+            data=request.data,
+            partial=True
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 
 class ProviderProfileView(APIView):

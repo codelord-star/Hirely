@@ -35,3 +35,9 @@ class ProviderProfileSerializer(serializers.ModelSerializer):
         model = ProviderProfile
         fields = ['business_name', 'business_description', 'county', 'town', 'specific_address', 'profile_image', 'created_at']
         read_only_fields = ['created_at']
+
+
+class AccountDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['email', 'phone_number']
