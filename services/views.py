@@ -76,6 +76,22 @@ def my_services(request):
 
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_service(request, service_id):
+    if not hasattr(request.user, 'provider_profile'):
+        return Response(
+            {"error": "You do not have a provider profile."},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    provider = request.user.provider_profile
+    service = get_object_or_404(provider.services, id=service_id)
+    serializer = ServiceSerializer(service)
+
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_service(request, service_id):
