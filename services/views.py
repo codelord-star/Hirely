@@ -1,11 +1,12 @@
 from django.shortcuts import render, get_object_or_404
 
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import APIView, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
-from services.serializers import ServiceSerializer
+from services.models import Category, Service
+from services.serializers import CategorySerializer, PublicServiceSerializer, ServiceSerializer
 
 # Create your views here.
 @api_view(['POST'])
@@ -108,3 +109,30 @@ def delete_service(request, service_id):
     return Response(
         status=status.HTTP_204_NO_CONTENT
     )
+
+@api_view(['GET'])
+def list_categories(request):
+    categories = Category.objects.all()
+    serializer = CategorySerializer(categories, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class PublicServiceView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        services = Service.objects.filter(is_available=True)
+        serializer = PublicServiceSerializer(services, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class PublicServiceDetailView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, service_id):
+        service = get_object_or_404(Service, id=service_id, is_available=True)
+        serializer = PublicServiceSerializer(service)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+    

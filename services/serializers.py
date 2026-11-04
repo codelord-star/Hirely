@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from accounts.serializers import ProviderProfileSerializer
 from services.models import Category, Service
 
 
@@ -57,3 +58,26 @@ class ServiceSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("duration_unit cannot be provided without duration_min or duration_max.")
 
         return data
+
+
+class PublicServiceSerializer(serializers.ModelSerializer):
+    provider = ProviderProfileSerializer(read_only=True)
+
+    class Meta:
+        model = Service
+        fields = [
+            'id',
+            'title', 
+            'description', 
+            'category', 
+            'price_ksh', 
+            'pricing_type', 
+            'service_image', 
+            'duration_min', 
+            'duration_max', 
+            'duration_unit', 
+            'is_available',
+            'created_at',
+            'provider',
+        ]
+        read_only_fields = fields
