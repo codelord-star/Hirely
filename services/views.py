@@ -121,7 +121,13 @@ class PublicServiceView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        services = Service.objects.filter(is_available=True)
+        category_id = request.query_params.get('category')
+
+        if category_id:
+            services = Service.objects.filter(is_available=True, category_id=category_id)
+        else:
+            services = Service.objects.filter(is_available=True)
+
         serializer = PublicServiceSerializer(services, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
