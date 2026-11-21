@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
+from accounts.models import ProviderProfile
 from services.models import Category, Service
 from services.serializers import CategorySerializer, PublicServiceSerializer, ServiceSerializer
 
@@ -126,6 +127,39 @@ class PublicServiceView(APIView):
         provider_town = request.query_params.get('provider_town')
         pricing_type = request.query_params.get('pricing_type')
 
+        if category_id and not category_id.isdigit():
+            return Response(
+                {"error": "Invalid category ID."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if category_id and not Category.objects.filter(id=category_id).exists():
+            return Response(
+                {"error": "Category does not exist."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        valid_counties = [choice[0] for choice in ProviderProfile.COUNTY_CHOICES]
+        if provider_county and provider_county not in valid_counties:
+            return Response(
+                {"error": "Invalid county."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if provider_town is not None and not provider_town.strip():
+            return Response(
+                {"error": "Invalid filter."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if provider_town is not None:
+            provider_town = provider_town.strip()
+        
+        valid_pricing_types = [choice[0] for choice in Service.PRICING_TYPE_CHOICES]
+        if pricing_type and pricing_type not in valid_pricing_types:
+            return Response(
+                {"error": "Invalid pricing type."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         services = Service.objects.filter(is_available=True)
 
         if category_id:
@@ -135,7 +169,7 @@ class PublicServiceView(APIView):
             services = services.filter(provider__county=provider_county)
 
         if provider_town:
-            services = services.filter(provider__town=provider_town)
+            services = services.filter(provider__town__iexact=provider_town)
 
         if pricing_type:
             services = services.filter(pricing_type=pricing_type)
