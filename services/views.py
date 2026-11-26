@@ -131,6 +131,23 @@ class PublicServiceView(APIView):
         search_query = request.query_params.get('search', '')
         search_terms = search_query.split()
 
+        sort_date = request.query_params.get('sort_date')
+        sort_price = request.query_params.get('sort_price')
+        valid_date_options = ['newest', 'oldest']
+        valid_price_options = ['price_asc', 'price_desc']
+
+        if sort_date and sort_date not in valid_date_options:
+            return Response(
+                {"error": "Invalid date sorting option."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if sort_price and sort_price not in valid_price_options:
+            return Response(
+                {"error": "Invalid price sorting option."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         if category_id and not category_id.isdigit():
             return Response(
                 {"error": "Invalid category ID."},
@@ -188,6 +205,23 @@ class PublicServiceView(APIView):
                 Q(provider__specific_address__icontains=term)
             )
             services = services.filter(search_conditions)
+
+        ordering = []
+        if sort_date is None and sort_price is None:
+            ordering.append('-created_at')
+
+        if sort_date == 'newest':
+            ordering.append('-created_at')
+
+        elif sort_date == 'oldest':
+            ordering.append('created_at')
+
+        if sort_price == 'price_asc':
+            ordering.append('price_ksh')
+        elif sort_price == 'price_desc':
+            ordering.append('-price_ksh')
+
+        services = services.order_by(*ordering)
 
         serializer = PublicServiceSerializer(services, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
