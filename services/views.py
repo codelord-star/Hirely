@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404
+from django.db.models import Q
 
 from rest_framework.decorators import APIView, api_view, permission_classes
 from rest_framework.response import Response
@@ -127,6 +128,9 @@ class PublicServiceView(APIView):
         provider_town = request.query_params.get('provider_town')
         pricing_type = request.query_params.get('pricing_type')
 
+        search_query = request.query_params.get('search', '')
+        search_terms = search_query.split()
+
         if category_id and not category_id.isdigit():
             return Response(
                 {"error": "Invalid category ID."},
@@ -173,6 +177,17 @@ class PublicServiceView(APIView):
 
         if pricing_type:
             services = services.filter(pricing_type=pricing_type)
+
+        for term in search_terms:
+            search_conditions = (
+                Q(title__icontains=term) |
+                Q(description__icontains=term) |
+                Q(provider__business_name__icontains=term) |
+                Q(provider__county__icontains=term) |
+                Q(provider__town__icontains=term) |
+                Q(provider__specific_address__icontains=term)
+            )
+            services = services.filter(search_conditions)
 
         serializer = PublicServiceSerializer(services, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
